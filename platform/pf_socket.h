@@ -39,7 +39,6 @@ typedef struct socket socket_t;
 
 /**
  * @brief IPv4 地址存储
-<<<<<<< HEAD
  *
  * 地址字段和端口字段均以主机字节序存储，
  * 内部函数负责在系统调用时转换为网络字节序。
@@ -47,14 +46,6 @@ typedef struct socket socket_t;
 typedef struct {
     uint32_t ipv4;      // IPv4 地址 (主机字节序)
     uint16_t port;      // 端口号 (主机字节序)
-=======
- * 
- * 地址字段以网络字节序存储，端口字段以主机字节序存储
- */
-typedef struct {
-    uint32_t ipv4;      // IPv4 地址
-    uint16_t port;      // 端口号 (0-65535)
->>>>>>> 4626990be1baa6ed1dae6e25ca55e8a4781f5517
 } inet_addr_t;
 
 /**
