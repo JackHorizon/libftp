@@ -9,6 +9,7 @@
 #include "com_log.h"
 #include <stdarg.h>
 #include <stddef.h>
+#include <string.h>
 #include <stdio.h>
 
 static log_level_t    g_log_level     = LOG_ALL;
@@ -28,21 +29,20 @@ static const char *log_level_to_string(log_level_t level) {
 
 static const char *log_extract_filename(const char *file)
 {
-    const char *p = file;
-    while (*p != '\0') {
-        if (*p == '/' || *p == '\\') {
-            p++;
-        }
-        p++;
+    const char *p = strrchr(file, '/');
+    const char *q = strrchr(file, '\\');
+
+    if (q != NULL && (p == NULL || q > p)) {
+        p = q;
     }
-    /* 回退一步，指向最后一个分隔符之后的字符 */
-    return (p > file) ? p - 1 : file;
+
+    return (p != NULL) ? (p + 1) : file;
 }
 
 static void log_default_output(log_level_t level, const char *msg, void *user_data)
 {
     (void)user_data;
-    fprintf(stdout, "[%s] %s\n", log_level_to_string(level), msg);
+    fprintf(stdout, "[%s]%s\n", log_level_to_string(level), msg);
 }
 
 void log_set_level(log_level_t level) {
@@ -57,7 +57,7 @@ void log_set_output(log_output_fn fn, void *user_data) {
 void log_dispatch(log_level_t level, const char *file, int line, const char *fmt, ...)
 {
     /* 级别过滤：只有 >= 当前阈值的日志才会输出 */
-    if (level > g_log_level) {
+    if (level < g_log_level) {
         return;
     }
 

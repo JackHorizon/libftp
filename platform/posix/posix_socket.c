@@ -19,7 +19,6 @@
 #if _WIN32
 #include <ws2tcpip.h>
 #include <winsock2.h>
-#pragma comment(lib, "ws2_32.lib")
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -68,9 +67,9 @@ socket_error_t socket_create_udp(socket_t **sock) {
 #ifdef _WIN32
     WSADATA wsa;
     WSAStartup(MAKEWORD(2, 2), &wsa);
-    s->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
+    s->handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 #else
-    s->handle = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
+    s->handle = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 #endif
     s->is_tcp = 0;
     *sock = s;
@@ -95,7 +94,7 @@ socket_error_t socket_inet_aton(const char *ip, uint16_t port, inet_addr_t *addr
     if (inet_pton(AF_INET, ip, &in_addr) != 1) {
         return SOCKET_ERR_INVALID;
     }
-    addr->ipv4 = in_addr.s_addr;
+    addr->ipv4 = ntohl(in_addr.s_addr);
     addr->port = port;
     return SOCKET_OK;
 }
@@ -106,8 +105,8 @@ socket_error_t socket_bind(socket_t *sock, const inet_addr_t *addr) {
     struct sockaddr_in sa;
     memset(&sa, 0, sizeof(sa));
     sa.sin_family = AF_INET;
-    sa.sin_port = addr->port;
-    sa.sin_addr.s_addr = addr->ipv4;
+    sa.sin_port = htons(addr->port);
+    sa.sin_addr.s_addr = htonl(addr->ipv4);
 
     /* 允许 SO_REUSEADDR，避免端口被 TIME_WAIT 占用 */
     const int opt = 1;
@@ -158,8 +157,8 @@ socket_error_t socket_accept(socket_t *sock, socket_t **client, inet_addr_t *cli
     *client = s;
 
     if (client_addr) {
-        client_addr->ipv4 = peer.sin_addr.s_addr;
-        client_addr->port = peer.sin_port;
+        client_addr->ipv4 = ntohl(peer.sin_addr.s_addr);
+        client_addr->port = ntohs(peer.sin_port);
     }
     return SOCKET_OK;
 }
@@ -170,8 +169,8 @@ socket_error_t socket_connect(socket_t *sock, const inet_addr_t *addr) {
 
     struct sockaddr_in sa = {0};
     sa.sin_family      = AF_INET;
-    sa.sin_port        = addr->port;
-    sa.sin_addr.s_addr = addr->ipv4;
+    sa.sin_port        = htons(addr->port);
+    sa.sin_addr.s_addr = htonl(addr->ipv4);
 
     if (connect(sock->handle, (struct sockaddr *)&sa, sizeof(sa)) < 0) {
         return SOCKET_ERROR;
@@ -204,8 +203,8 @@ int socket_send_to(socket_t *sock, const void *buf, int len, const inet_addr_t *
 
     struct sockaddr_in sa = {0};
     sa.sin_family       = AF_INET;
-    sa.sin_addr.s_addr  = addr->ipv4;
-    sa.sin_port         = addr->port;
+    sa.sin_addr.s_addr  = htonl(addr->ipv4);
+    sa.sin_port         = htons(addr->port);
 
     int sent = sendto(sock->handle, buf, len, 0, (struct sockaddr *)&sa, sizeof(sa));
     if (sent < 0) {
@@ -227,8 +226,8 @@ int socket_recv_from(socket_t *sock, void *buf, int len, inet_addr_t *src_addr) 
     }
 
     if (src_addr) {
-        src_addr->ipv4 = peer.sin_addr.s_addr;
-        src_addr->port = peer.sin_port;
+        src_addr->ipv4 = ntohl(peer.sin_addr.s_addr);
+        src_addr->port = ntohs(peer.sin_port);
     }
     return received;
 }
@@ -302,10 +301,10 @@ const char *socket_inet_to_string(const inet_addr_t *addr, char *buf, size_t buf
 
     char ip_buf[16];
     (void)snprintf(ip_buf, sizeof(ip_buf), "%u.%u.%u.%u",
-        (addr->ipv4 << 24) & 0xFF,
-        (addr->ipv4 << 16) & 0xFF,
-        (addr->ipv4 << 8) & 0xFF,
-        (addr->ipv4) & 0xff
+        (addr->ipv4 >> 24) & 0xFF,
+        (addr->ipv4 >> 16) & 0xFF,
+        (addr->ipv4 >> 8) & 0xFF,
+        (addr->ipv4) & 0xFF
     );
 
     (void)snprintf(buf, buf_size, "%s:%u", ip_buf, addr->port);

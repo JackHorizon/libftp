@@ -6,6 +6,11 @@ add_library(platform STATIC
   posix/posix_socket.c)
 
 target_link_libraries(platform PUBLIC pthread common)
+if(WIN32)
+  target_link_libraries(platform PUBLIC ws2_32)
+else()
+  target_link_libraries(platform PUBLIC pthread common)
+endif()
 
 message(STATUS "Building for POSIX")
 

@@ -14,3 +14,4 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # 添加子目录
 add_subdirectory(common)
 add_subdirectory(platform)
+add_subdirectory(tests)
