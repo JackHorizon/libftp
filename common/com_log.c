@@ -9,7 +9,10 @@
 #include "com_log.h"
 #include <stdarg.h>
 #include <stddef.h>
+<<<<<<< HEAD
 #include <string.h>
+=======
+>>>>>>> 4626990be1baa6ed1dae6e25ca55e8a4781f5517
 #include <stdio.h>
 
 static log_level_t    g_log_level     = LOG_ALL;
@@ -29,6 +32,7 @@ static const char *log_level_to_string(log_level_t level) {
 
 static const char *log_extract_filename(const char *file)
 {
+<<<<<<< HEAD
     const char *p = strrchr(file, '/');
     const char *q = strrchr(file, '\\');
 
@@ -37,12 +41,27 @@ static const char *log_extract_filename(const char *file)
     }
 
     return (p != NULL) ? (p + 1) : file;
+=======
+    const char *p = file;
+    while (*p != '\0') {
+        if (*p == '/' || *p == '\\') {
+            p++;
+        }
+        p++;
+    }
+    /* 回退一步，指向最后一个分隔符之后的字符 */
+    return (p > file) ? p - 1 : file;
+>>>>>>> 4626990be1baa6ed1dae6e25ca55e8a4781f5517
 }
 
 static void log_default_output(log_level_t level, const char *msg, void *user_data)
 {
     (void)user_data;
+<<<<<<< HEAD
     fprintf(stdout, "[%s]%s\n", log_level_to_string(level), msg);
+=======
+    fprintf(stdout, "[%s] %s\n", log_level_to_string(level), msg);
+>>>>>>> 4626990be1baa6ed1dae6e25ca55e8a4781f5517
 }
 
 void log_set_level(log_level_t level) {
@@ -57,7 +76,11 @@ void log_set_output(log_output_fn fn, void *user_data) {
 void log_dispatch(log_level_t level, const char *file, int line, const char *fmt, ...)
 {
     /* 级别过滤：只有 >= 当前阈值的日志才会输出 */
+<<<<<<< HEAD
     if (level < g_log_level) {
+=======
+    if (level > g_log_level) {
+>>>>>>> 4626990be1baa6ed1dae6e25ca55e8a4781f5517
         return;
     }
 
