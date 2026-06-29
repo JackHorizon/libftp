@@ -65,12 +65,9 @@ void log_set_output(log_output_fn fn, void *user_data);
 void log_dispatch(log_level_t level, const char *file, int line, const char *fmt, ...);
 
 /* 以下为日志宏，根据 LOG_LEVEL 决定是否实际输出 */
-<<<<<<< HEAD
 #ifndef LOG_LEVEL
 #define LOG_LEVEL LOG_ALL
 #endif
-=======
->>>>>>> 4626990be1baa6ed1dae6e25ca55e8a4781f5517
 
 #if LOG_LEVEL <= LOG_DEBUG
 #define LOG_DEBUG(fmt, ...) \
